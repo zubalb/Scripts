@@ -1,0 +1,55 @@
+### Скрипт написан через Expect. Позволяет настроить время, обходя указанные коммутаторы в файле.
+
+#!/usr/bin/expect -f
+set ip [lindex $argv 0]
+set snmpwalk "snmpwalk -v 2c -c snmpserv $ip sysname\n"
+
+spawn  telnet $ip
+
+set user "user"
+set pass "pass"
+
+expect {
+  ":" {
+       send "$user\n"
+       set timeout 2
+       expect "Password:"
+       set timeout 5
+       send "$pass\n"
+}
+}
+expect {
+       "mes" {
+       send "config t\n"
+       expect "(config)#"
+       send "clock timezone MSK +3\n"
+       expect "(config)#"
+       send "clock source sntp\n"
+       expect "(config)#"
+       send "sntp unicast client enable\n"
+       expect "(config)#"
+       send "sntp unicast client poll\n"
+       expect "(config)#"
+       send "sntp server 10.10.10.10\n"
+       expect "(config)#"
+       send "sntp server 10.10.10.10\n"
+       expect "(config)#"
+       send "do wr mem\n"
+       expect "Y"
+       send "Y"
+       expect "Copy succeeded"
+       send "do show clock\n"
+expect {
+       "Dec 16" {
+       puts "Done"
+       }
+       "Times source is sntp" {
+       puts "BILO OKEY"
+       }
+       send "do sh version\n"
+}
+}
+}
+### Ниже приложен цикл для запуска данного скрипта из текстового документа:
+
+while IFC= read -r ip; do ./mes2124 $ip 1>/dev/null && echo "Done" || echo "Something goes wrong...$ip">&2; done<mes2124_list 2>mes_err;

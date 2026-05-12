@@ -1,0 +1,84 @@
+### Скрипт написан через Expect. Позволяет обойти все указанные коммутаторы в файле, и добавить отображение уровня сигнала в dBm, вместо дефолтно настроенного mW.
+### Настраиваем ddm:
+
+#!/usr/bin/expect -f
+set ip [lindex $argv 0]
+
+spawn  telnet $ip
+
+set user "user"
+set pass "pass"
+set timeout 10
+
+expect {
+  "Username:" {
+      send "$user\r"
+      send "$pass\r"
+      send "enable admin\n"
+      send "config ddm power_unit dbm\n"
+      expect "Success."
+      send "save\n"
+      set timeout 2
+      expect "Done."
+      send "show ddm ports status\n"
+      set timeout 2
+      expect "dBm"
+      send "logout\n"
+      expect eof
+}
+}
+### Цикл для запуска:
+
+while IFS= read -r ip; do ./des3200 "$ip" 1>/dev/null && echo "Done" || echo  "Error $ip"; done < dlink_list
+
+### На всех ли коммутаторах настроено корректное отображение:
+
+#!/usr/bin/expect -f
+set ip [lindex $argv 0]
+
+log_file /dev/null
+
+spawn  telnet $ip
+
+set user "user"
+set pass "pass"
+set timeout 10
+
+set prompt {(:|#|%|>) ?$}
+
+expect {
+   "Username:" {
+       send "$user\r"
+       send "$pass\r"
+       expect -re "$prompt"
+       send "show ddm ports status\n"
+               }
+        timeout { puts "Error" ; exit 1 }
+        eof { puts "Error" ; exit 1 }
+}
+expect -re "$prompt" {
+        set output $expect_out(buffer)
+}
+if {[string first "dBm" $output] != -1} {
+        send "logout\n"
+        expect eof
+        puts "OK"
+        exit 0
+        }
+    else {
+        send "logout\n"
+        expect eof
+        puts "Error"
+        exit 1;
+        }
+    timeout {
+        puts "Error: Timeout"
+        exit 1;
+        }
+}
+
+### Цикл для запуска:
+
+while IFS= read -r ip; do ./des3200_result "$ip" 1>/dev/null  && echo "OK" || echo  "$ip">&2; done < dlink_list 2> errors.txt
+
+### Проверяет из того же списка адресов, коммутаторы с ошибками помещает в файл errors.txt.

@@ -1,0 +1,41 @@
+### Скрипт написан через Expect. Позволяет настроить SNMP, обходя указанные коммутаторы в файле.
+
+#!/usr/bin/expect -f
+set ip [lindex $argv 0]
+set snmpwalk "snmpwalk -v 2c -c snmp_serv $ip sysname\n"
+
+spawn  telnet $ip
+
+set user "user"
+set pass "pass"
+expect {
+   "User Name" {
+       send "$user\n"
+       set timeout 2
+       expect "Password:"
+       set timeout 5
+       send "$pass\n"
+   }
+}
+expect {
+       "mes" {
+       send "config t\n"
+       expect "(config)#"
+       send "snmp-server community snmp_serv\n"
+       set timeout 2
+       expect "(config)#"
+       send "do wr mem\n"
+       expect "Y"
+       send "y\n"
+       expect "Copy"
+       send "end\n"
+       expect "Copy"
+       send "exit\n"
+       expect eof
+}
+}
+### Цикл для запуска скрипта:
+
+while IFS= read -r ip; do ./snmp $ip 1>/dev/null && echo "OK" || echo "Error"; done < snmp_list;
+
+### Запускает скрипт, отправляет ОК - если не было ошибок, Error - если что-то пошло не так. IP-адреса берёт из snmp_list.
