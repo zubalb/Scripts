@@ -1,0 +1,43 @@
+devices = [
+    {"ip": "192.168.1.1", "vendor": "cisco"},
+    {"ip": "192.168.1.2", "vendor": "huawei"},
+    {"ip": "192.168.1.3", "vendor": "mikrotik"},
+]
+for device in devices:
+    if device["vendor"] == "cisco":
+        command = "interface GigabitEthernet0/1"
+    elif device["vendor"] == "huawei":
+        command = "interface GigabitEthernet0/0/1"
+    else:
+        command = "Неизвестный вендор"
+    if command is not None:
+        print(f"Устройство: {device['vendor']} | IP: {device['ip']} | Команда: {command}")
+
+
+username = input("Введите username:")
+password = getpass.getpass("Введите пароль:")
+ip = input("Введите IP адрес:")
+port = int(input("Введите номер порта:"))
+vendor = "cisco"
+
+def get_command(vendor):
+    if vendor == "cisco":
+        return "interface GigabitEthernet0/1"
+    elif vendor == "huawei":
+        return "interface GigabitEthernet0/0/1"
+    else:
+        return "Неизвестный вендор"
+
+print(f"Устройство: {vendor} | IP: {ip} | Порт: {port} | Пользователь: {username} | Команда: {get_command(vendor)} ")
+
+
+try:
+    with open("devices.json", "r") as file:
+        data = json.load(file)
+    for device in data:
+        print(f"IP: {device['ip']} | Порт: {device['port']} | Пользователь: {device['username']}")
+
+except FileNotFoundError:
+    print("Error! Файл не найден!")
+except json.JSONDecodeError as e:
+    print(f"Неизвестная ошибка {e}")

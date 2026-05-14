@@ -1,0 +1,4 @@
+[
+    {"ip": "192.168.1.1", "port": 24, "username": "admin", "password": "secret", "device_type": "cisco_ios_telnet", "vendor": "cisco"},
+    {"ip": "192.168.1.2", "port": 48, "username": "admin", "password": "secret", "device_type": "huawei_telnet", "vendor": "huawei"}
+]
