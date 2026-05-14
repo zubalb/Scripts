@@ -41,3 +41,15 @@ except FileNotFoundError:
     print("Error! Файл не найден!")
 except json.JSONDecodeError as e:
     print(f"Неизвестная ошибка {e}")
+
+Делаю netmiko, это скопировал тк пришла идея оптимизировать
+
+try:
+    with open("devices.json", "r") as file:
+        data = json.load(file)
+    for device in data:
+            print(f"IP: {device['ip']} | Порт: {get_command(device['vendor'])} | Вендор: {get_device_type(device['vendor'])} | Пользователь: {device['username']}")
+except FileNotFoundError:
+    print("Error! Файл не найден!")
+except json.JSONDecodeError as e:
+    print(f"Неизвестная ошибка {e}")

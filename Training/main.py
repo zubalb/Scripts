@@ -18,6 +18,17 @@ def get_command(vendor):
         return (f"interface GigabitEthernet0/0/{num_port}")
     else:
         return "Неизвестный вендор:"
+    
+def connect_and_reset(device, command):
+    connection = ConnectHandler(
+        device_type=get_device_type(device['vendor']),
+        host= device['ip'],
+        username=device['username'],
+        password=device['password'],
+    )
+    print(f"Подключился к: {device['ip']}")
+    connection.send_config_set([command, "shutdown", "no shutdown"])
+    connection.disconnect()
 try:
     with open("devices.json", "r") as file:
         data = json.load(file)
@@ -27,5 +38,3 @@ except FileNotFoundError:
     print("Error! Файл не найден!")
 except json.JSONDecodeError as e:
     print(f"Неизвестная ошибка {e}")
-
-
