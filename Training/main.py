@@ -1,4 +1,5 @@
 from netmiko import ConnectHandler
+from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
 import getpass
 import json
 
@@ -11,17 +12,18 @@ def get_device_type(vendor):
         return "Неизвестный вендор"
 
 def get_command(vendor):
-    num_port = int(input("Введите последнюю цифру номера порта:"))
+    num_port = input("Укажите номер порта в формате (x/x):")
     if vendor == "cisco":
-        return (f"interface GigabitEthernet0/{num_port}")
+        return (f"interface FastEthernet{num_port}")
     elif vendor == "huawei":
-        return (f"interface GigabitEthernet0/0/{num_port}")
+        return (f"interface GigabitEthernet{num_port}")
     else:
         return "Неизвестный вендор:"
     
 def connect_and_reset(device, command):
     connection = ConnectHandler(
         device_type=get_device_type(device['vendor']),
+        port=device['telnet_port'],
         host= device['ip'],
         username=device['username'],
         password=device['password'],
@@ -33,8 +35,13 @@ try:
     with open("devices.json", "r") as file:
         data = json.load(file)
     for device in data:
-            print(f"IP: {device['ip']} | Порт: {get_command(device['vendor'])} | Вендор: {get_device_type(device['vendor'])} | Пользователь: {device['username']}")
+            command = get_command(device['vendor'])
+            connect_and_reset(device, command)
 except FileNotFoundError:
     print("Error! Файл не найден!")
 except json.JSONDecodeError as e:
     print(f"Неизвестная ошибка {e}")
+except NetmikoTimeoutException as e:
+    print(f"Таймаут подключения: {e}")
+except NetmikoAuthenticationException as e:
+    print(f"Неверный логин или пароль {e}")
