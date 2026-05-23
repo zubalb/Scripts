@@ -34,7 +34,9 @@ def connect_and_reset(ip, username, password, interface, vendor):
         print(f"Таблица коммутации:\n{MacTable}")
         connection.disconnect()
     elif get_vendor(vendor) == "juniper_junos":
-        connection.send_config_set([f"set interfaces {interface} disable", f"delete interfaces {interface} disable"])
+        connection.send_config_set([f"set interfaces {interface} disable"])
+        connection.commit()
+        connection.send_config_set([f"delete interfaces {interface} disable"])
         connection.commit(and_quit=True)
         time.sleep(1)
         IntStatus = connection.send_command(f"show interfaces {interface} descriptions")
