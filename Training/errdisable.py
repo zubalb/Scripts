@@ -1,6 +1,7 @@
 from netmiko import ConnectHandler
 import os
 import sys
+import time
 
 ip = sys.argv[1]
 interface =sys.argv[2]
@@ -14,6 +15,7 @@ def connect_and_reset():
     )
     print(f"Подключение к {ip}:")
     SetIntActive = connection.send_command(f"set int active {interface}")
+    time.sleep(4)
     IntStatus = connection.send_command(f"show interface status {interface}")
     print(f"Разблокировал: \n {IntStatus}")
 
